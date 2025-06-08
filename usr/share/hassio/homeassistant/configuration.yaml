@@ -115,20 +115,30 @@ intent_script:
       - action: openweathermap.get_minute_forecast
         target:
           device_id: cfda3f6a039187a269637c1bcdf39972
-        response_variable: result
-
+        response_variable: forecast
       - stop: ""
-        response_variable: result
+        response_variable: forecast
     speech:
       text: >
-        {% set f = action_response['openweathermap.get_minute_forecast'] %}
-        {% if f and f.forecast %}
-          {% set first = (f.forecast | selectattr('precipitation','>',0) | list | first) %}
-          {% if first %}
-            Es regnet in {{ first.start_minute }} Minuten.
+        {% set forecast = action_response['weather.openweathermap'].forecast %}
+        {% set now = now() %}
+        {% set rain_start = None %}
+        {% set rain_stop = None %}
+        {% for item in forecast %}
+          {% if item.precipitation > 0 and not rain_start %}
+            {% set rain_start = item.datetime %}
+          {% elif item.precipitation == 0 and rain_start and not rain_stop %}
+            {% set rain_stop = item.datetime %}
+          {% endif %}
+        {% endfor %}
+        {% if rain_start %}
+          {% set minutes_until_rain = ((rain_start - now).total_seconds() / 60) | round %}
+          {% if rain_stop %}
+            {% set minutes_until_stop = ((rain_stop - now).total_seconds() / 60) | round %}
+            Es fängt in {{ minutes_until_rain }} Minuten an zu regnen und hört in {{ minutes_until_stop }} Minuten wieder auf.
           {% else %}
-            In den nächsten 60 Minuten ist kein Regen vorhergesagt.
+            Es fängt in {{ minutes_until_rain }} Minuten an zu regnen.
           {% endif %}
         {% else %}
-          Ich konnte keine Forecast-Daten abrufen.
+          Es ist kein Regen in der Vorhersage.
         {% endif %}
