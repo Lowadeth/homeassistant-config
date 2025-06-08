@@ -121,23 +121,35 @@ intent_script:
     speech:
       text: >
         {% set forecast = action_response['weather.openweathermap'].forecast %}
-        {% set now = now() %}
-        {% set rain_start = None %}
-        {% set rain_stop = None %}
+        {% set now_ts = as_timestamp(now()) %}
+        {% set rain_start_ts = namespace(value=None) %}
+        {% set rain_stop_ts = namespace(value=None) %}
+        {% set is_raining_now = forecast[0].precipitation > 0 %}
+
         {% for item in forecast %}
-          {% if item.precipitation > 0 and not rain_start %}
-            {% set rain_start = item.datetime %}
-          {% elif item.precipitation == 0 and rain_start and not rain_stop %}
-            {% set rain_stop = item.datetime %}
+          {% set ts = as_timestamp(item.datetime) %}
+          {% if item.precipitation > 0 and rain_start_ts.value is none %}
+            {% set rain_start_ts.value = ts %}
+          {% elif item.precipitation == 0 and (rain_start_ts.value is not none or is_raining_now) and rain_stop_ts.value is none and ts > now_ts %}
+            {% set rain_stop_ts.value = ts %}
           {% endif %}
         {% endfor %}
-        {% if rain_start %}
-          {% set minutes_until_rain = ((rain_start - now).total_seconds() / 60) | round %}
-          {% if rain_stop %}
-            {% set minutes_until_stop = ((rain_stop - now).total_seconds() / 60) | round %}
-            Es fängt in {{ minutes_until_rain }} Minuten an zu regnen und hört in {{ minutes_until_stop }} Minuten wieder auf.
+
+        {% if is_raining_now %}
+          {% if rain_stop_ts.value %}
+            {% set minutes = ((rain_stop_ts.value - now_ts) / 60) | round %}
+            Es regnet gerade und hört in {{ minutes }} Minute{{ 'n' if minutes !=1 }} auf.
           {% else %}
-            Es fängt in {{ minutes_until_rain }} Minuten an zu regnen.
+            Es regnet gerade und in der Vorhersage keine Regenpause erkennbar.
+          {% endif %}
+
+        {% elif rain_start_ts.value %}
+          {% set minutes_start = ((rain_start_ts.value - now_ts) / 60) | round %}
+          {% if rain_stop_ts.value %}
+            {% set minutes_stop = ((rain_stop_ts.value - now_ts) / 60) | round %}
+            Es regnet in {{ minutes_start }} Minuten und hört in {{ minutes_stop }} Minuten wieder auf.
+          {% else %}
+            Es regnet in {{ minutes_start }} Minuten und kein Ende erkennbar.
           {% endif %}
         {% else %}
           Es ist kein Regen in der Vorhersage.
