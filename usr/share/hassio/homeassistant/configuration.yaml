@@ -20,11 +20,6 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-logger:
-  default: warning
-  logs:
-    homeassistant.components.conversation: debug
-
 alexa:
   smart_home:
     locale: de-DE
@@ -116,5 +111,24 @@ intent_script:
           Es wird derzeit nichts abgespielt.
         {% endif %}
   WhenItsRaining:
+    action:
+      - action: openweathermap.get_minute_forecast
+        target:
+          device_id: cfda3f6a039187a269637c1bcdf39972
+        response_variable: result
+
+      - stop: ""
+        response_variable: result
     speech:
-      text: "Es regnet bald."
+      text: >
+        {% set f = action_response['openweathermap.get_minute_forecast'] %}
+        {% if f and f.forecast %}
+          {% set first = (f.forecast | selectattr('precipitation','>',0) | list | first) %}
+          {% if first %}
+            Es regnet in {{ first.start_minute }} Minuten.
+          {% else %}
+            In den nächsten 60 Minuten ist kein Regen vorhergesagt.
+          {% endif %}
+        {% else %}
+          Ich konnte keine Forecast-Daten abrufen.
+        {% endif %}
