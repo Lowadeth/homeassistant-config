@@ -20,9 +20,10 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-homematicip_cloud:
-  - accesspoint: 3014F711A00003D8A9ABD1EB
-    authtoken: DEC3DB3594AD6CEAD9D42F4D3086C1B60B4302C3D4ECDE0E10B0C98346158435
+logger:
+  default: warning
+  logs:
+    homeassistant.components.conversation: debug
 
 alexa:
   smart_home:

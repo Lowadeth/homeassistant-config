@@ -3,4 +3,4 @@ intents:
   WhenItsRaining:
     data:
       - sentences:
-          - "Wann regnet es?"
+          - "wann regnet es"
