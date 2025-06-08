@@ -1,0 +1,119 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+http:
+  #ssl_certificate: ssl/www.peter-zorn.de/chain.pem
+  #ssl_key: ssl/www.peter-zorn.de/privkey.pem
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 192.168.2.42
+
+homeassistant:
+  external_url: "https://ha.furysoft.de"
+  internal_url: "http://192.168.2.225:8123"
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+homematicip_cloud:
+  - accesspoint: 3014F711A00003D8A9ABD1EB
+    authtoken: DEC3DB3594AD6CEAD9D42F4D3086C1B60B4302C3D4ECDE0E10B0C98346158435
+
+alexa:
+  smart_home:
+    locale: de-DE
+    endpoint: https://api.amazonalexa.com/v3/events
+    client_id: https://layla.amazon.com/
+    client_secret: !secret alexa_client_secret
+    filter:
+      include_entities:
+        - light.treppe
+        - light.schornstein
+        - input_button.welcher_song
+        - input_button.welches_album
+    entity_config:
+      light.treppe:
+        name: "Treppe"
+        description: "das Licht auf der Treppe"
+      light.schornstein:
+        name: "Schornstein"
+        description: "das Licht am Schornstein"
+      input_button.welcher_song:
+        name: "Welcher Song"
+        description: "Song, der gerade von Plex auf Echo gespielt wird"
+      input_button.welches_album:
+        name: "Welches Album"
+        description: "Album, das gerade von Plex auf Echo gespielt wird"
+
+light:
+  - platform: artnet_led
+    host: 192.168.2.201
+    universes:
+      0:
+        devices:
+          - channel: 1
+            name: Bunte Stripes
+            type: rgbw
+
+          - channel: 5
+            name: Weiße Stripes
+            type: dimmer
+
+          - channel: 6
+            name: Disco-Strahler Nord
+            type: rgbw
+
+          - channel: 10
+            name: Disco-Strahler Süd
+            type: rgbw
+
+          - channel: 32
+            name: Motor
+            type: dimmer
+
+intent_script:
+  HelloWorld:
+    speech:
+      text: "Hallo! Ich bin dein Home Assistant."
+  WhichSong:
+    speech:
+      text: >
+        {% set player = 'media_player.plex_plex_for_alexa_alexa' %}
+        {% if is_state(player, 'playing') %}
+          {% set title = state_attr(player, 'media_title') %}
+          {% set artist = state_attr(player, 'media_artist') %}
+          {% if title and artist %}
+            Dies ist "{{ title }}" von "{{ artist }}".
+          {% elif title %}
+            Der Titel lautet "{{ title }}".
+          {% else %}
+            Ich kann den aktuellen Titel nicht ermitteln.
+          {% endif %}
+        {% else %}
+          Es wird derzeit nichts abgespielt.
+        {% endif %}
+  WhichAlbum:
+    speech:
+      text: >
+        {% set player = 'media_player.plex_plex_for_alexa_alexa' %}
+        {% if is_state(player, 'playing') %}
+          {% set title = state_attr(player, 'media_album_name') %}
+          {% set artist = state_attr(player, 'media_album_artist') %}
+          {% if title and artist %}
+            Dies ist "{{ title }}" von "{{ artist }}".
+          {% elif title %}
+            Der Album heißt "{{ title }}".
+          {% else %}
+            Ich kann das aktuelle Album nicht ermitteln.
+          {% endif %}
+        {% else %}
+          Es wird derzeit nichts abgespielt.
+        {% endif %}
+  WhenItsRaining:
+    speech:
+      text: "Es regnet bald."

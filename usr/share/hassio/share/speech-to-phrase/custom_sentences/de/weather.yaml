@@ -1,0 +1,6 @@
+language: "de"
+intents:
+  WhenItsRaining:
+    data:
+      - sentences:
+          - "Wann regnet es?"

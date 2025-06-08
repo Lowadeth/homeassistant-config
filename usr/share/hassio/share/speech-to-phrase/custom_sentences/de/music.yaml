@@ -1,0 +1,10 @@
+language: "de"
+intents:
+  WhichSong:
+    data:
+      - sentences:
+          - "Welcher Song"
+  WhichAlbum:
+    data:
+      - sentences:
+          - "Welches Album"

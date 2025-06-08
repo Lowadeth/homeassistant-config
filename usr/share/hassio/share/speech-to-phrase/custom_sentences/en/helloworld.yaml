@@ -1,0 +1,6 @@
+language: "en"
+intents:
+  HelloWorld:
+    data:
+      - sentences:
+          - "Hello World"
