@@ -116,11 +116,19 @@ intent_script:
         target:
           device_id: cfda3f6a039187a269637c1bcdf39972
         response_variable: forecast
+      - action: weather.get_forecasts
+        target:
+          device_id:
+            - cfda3f6a039187a269637c1bcdf39972
+        data:
+          type: hourly
+        response_variable: hourly_forecast
       - stop: ""
         response_variable: forecast
     speech:
       text: >
         {% set forecast = action_response['weather.openweathermap'].forecast %}
+        {% set hourly_forecast = action_response['weather.openweathermap'].forecast %}
         {% set now_ts = as_timestamp(now()) %}
         {% set rain_start_ts = namespace(value=None) %}
         {% set rain_stop_ts = namespace(value=None) %}
@@ -140,7 +148,19 @@ intent_script:
             {% set minutes = ((rain_stop_ts.value - now_ts) / 60) | round %}
             Es regnet gerade und hört in {{ minutes }} Minute{{ 'n' if minutes !=1 }} auf.
           {% else %}
-            Es regnet gerade und in der Vorhersage keine Regenpause erkennbar.
+            {% set found_hourly_change = false %}
+            {% for item in hourly_forecast %}
+              {% set ts = as_timestamp(item.datetime) %}
+              {% if ts > now_ts and item.precipitation == 0 %}
+                {% set found_hourly_change = true %}
+                {% set hours = ((ts - now_ts) / 3600) | round %}
+                Es regnet gerade und hört in etwa {{ hours }} Stunde{{ 'n' if hours !=1 }} auf.
+                {% break %}
+              {% endif %}
+            {% endfor %}
+            {% if not found_hourly_change %}
+              Es regnet gerade und in der Vorhersage keine Regenpause erkennbar.
+            {% endif %}
           {% endif %}
 
         {% elif rain_start_ts.value %}
@@ -149,8 +169,32 @@ intent_script:
             {% set minutes_stop = ((rain_stop_ts.value - now_ts) / 60) | round %}
             Es regnet in {{ minutes_start }} Minuten und hört in {{ minutes_stop }} Minuten wieder auf.
           {% else %}
-            Es regnet in {{ minutes_start }} Minuten und kein Ende erkennbar.
+            {% set found_hourly_change = false %}
+            {% for item in hourly_forecast %}
+              {% set ts = as_timestamp(item.datetime) %}
+              {% if ts > now_ts and item.precipitation == 0 %}
+                {% set found_hourly_change = true %}
+                {% set hours = ((ts - now_ts) / 3600) | round %}
+                Es regnet in {{ minutes_start }} Minuten und hört in etwa {{ hours }} Stunde{{ 'n' if hours !=1 }} auf.
+                {% break %}
+              {% endif %}
+            {% endfor %}
+            {% if not found_hourly_change %}
+              Es regnet in {{ minutes_start }} Minuten und kein Ende erkennbar.
+            {% endif %}
           {% endif %}
         {% else %}
-          Es ist kein Regen in der Vorhersage.
+          {% set found_hourly_rain = false %}
+          {% for item in hourly_forecast %}
+            {% set ts = as_timestamp(item.datetime) %}
+            {% if ts > now_ts and item.precipitation > 0 %}
+              {% set found_hourly_rain = true %}
+              {% set hours = ((ts - now_ts) / 3600) | round %}
+              Es regnet in etwa {{ hours }} Stunde{{ 'n' if hours !=1 }}.
+              {% break %}
+            {% endif %}
+          {% endfor %}
+          {% if not found_hourly_rain %}
+            Es ist kein Regen in der Vorhersage.
+          {% endif %}
         {% endif %}
