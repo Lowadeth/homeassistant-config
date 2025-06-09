@@ -1,0 +1,15 @@
+{% macro has_rain(weather_data) -%}
+    {%- if weather_data is defined 
+        and weather_data is not none 
+        and weather_data.weather is defined 
+        and weather_data.weather.openweathermap is defined 
+        and weather_data.weather.openweathermap.forecast is defined -%}
+        {%- set has_rain = weather_data.weather.openweathermap.forecast
+            |selectattr('precipitation', '>', 0)
+            |list
+            |length > 0 -%}
+        {{- "true" if has_rain else "false" -}}
+    {%- else -%}
+        {{- "false" -}}
+    {%- endif -%}
+{% endmacro -%}
