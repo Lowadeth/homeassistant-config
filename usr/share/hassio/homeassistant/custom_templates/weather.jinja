@@ -27,3 +27,14 @@
         {{- '{"time": "no_rain", "resolution": "hours"}' -}}
     {%- endif -%}
 {% endmacro -%}
+
+{% macro days_until_no_rain(forecast) -%}
+    {%- set first_no_rain = forecast
+        |selectattr('precipitation', '==', 0)
+        |first -%}
+    {%- if first_no_rain is defined -%}
+        {{- '{"time": "' ~ first_no_rain.datetime ~ '", "resolution": "days"}' -}}
+    {%- else -%}
+        {{- '{"time": "always_rain", "resolution": "days"}' -}}
+    {%- endif -%}
+{% endmacro -%}
