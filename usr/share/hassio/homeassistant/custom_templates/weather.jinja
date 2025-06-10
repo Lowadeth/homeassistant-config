@@ -5,3 +5,21 @@
         |length > 0 -%}
     {{- "true" if has_rain else "false" -}}
 {% endmacro -%}
+
+{% macro minutes_until_rain(forecast) -%}
+    {%- set first_rain = forecast
+        |selectattr('precipitation', '>', 0)
+        |first -%}
+    {%- if first_rain is defined -%}
+        {%- set first_rain_time = first_rain.datetime -%}
+        {%- set current_time = forecast[0].datetime -%}
+        {%- set first_hour = first_rain_time[11:13] | int -%}
+        {%- set first_minute = first_rain_time[14:16] | int -%}
+        {%- set current_hour = current_time[11:13] | int -%}
+        {%- set current_minute = current_time[14:16] | int -%}
+        {%- set minutes = (first_hour * 60 + first_minute) - (current_hour * 60 + current_minute) -%}
+        {{- minutes -}}
+    {%- else -%}
+        {{- "no_rain" -}}
+    {%- endif -%}
+{% endmacro -%}
