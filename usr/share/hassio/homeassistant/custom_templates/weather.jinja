@@ -17,6 +17,17 @@
     {%- endif -%}
 {% endmacro -%}
 
+{% macro minutes_until_no_rain(forecast) -%}
+    {%- set first_no_rain = forecast
+        |selectattr('precipitation', '==', 0)
+        |first -%}
+    {%- if first_no_rain is defined -%}
+        {{- '{"status": "rain_stops", "time": "' ~ first_no_rain.datetime ~ '", "resolution": "minutes"}' -}}
+    {%- else -%}
+        {{- '{"status": "always_rain", "resolution": "minutes"}' -}}
+    {%- endif -%}
+{% endmacro -%}
+
 {% macro hours_until_rain(forecast) -%}
     {%- set first_rain = forecast
         |selectattr('precipitation', '>', 0)
@@ -25,6 +36,28 @@
         {{- '{"status": "rain_starts", "time": "' ~ first_rain.datetime ~ '", "resolution": "hours"}' -}}
     {%- else -%}
         {{- '{"status": "no_rain", "resolution": "hours"}' -}}
+    {%- endif -%}
+{% endmacro -%}
+
+{% macro hours_until_no_rain(forecast) -%}
+    {%- set first_no_rain = forecast
+        |selectattr('precipitation', '==', 0)
+        |first -%}
+    {%- if first_no_rain is defined -%}
+        {{- '{"status": "rain_stops", "time": "' ~ first_no_rain.datetime ~ '", "resolution": "hours"}' -}}
+    {%- else -%}
+        {{- '{"status": "always_rain", "resolution": "hours"}' -}}
+    {%- endif -%}
+{% endmacro -%}
+
+{% macro days_until_rain(forecast) -%}
+    {%- set first_rain = forecast
+        |selectattr('precipitation', '>', 0)
+        |first -%}
+    {%- if first_rain is defined -%}
+        {{- '{"status": "rain_starts", "time": "' ~ first_rain.datetime ~ '", "resolution": "days"}' -}}
+    {%- else -%}
+        {{- '{"status": "no_rain", "resolution": "days"}' -}}
     {%- endif -%}
 {% endmacro -%}
 

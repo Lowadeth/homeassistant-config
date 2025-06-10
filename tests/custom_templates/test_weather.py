@@ -87,6 +87,40 @@ def test_minutes_until_rain_macro():
         assert result_rain_data['time'] == '2025-06-10T17:13:00+00:00'
         assert result_rain_data['resolution'] == 'minutes'
 
+def test_minutes_until_no_rain_macro():
+    """Test the minutes_until_no_rain macro."""
+    # Setup Jinja2 environment with whitespace control
+    env = Environment(
+        loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), '../../usr/share/hassio/homeassistant')),
+        trim_blocks=True,
+        lstrip_blocks=True
+    )
+    
+    # Get the template
+    template = env.get_template('custom_templates/weather.jinja')
+    
+    # Test with rain stopping in forecast
+    test_data_with_rain_stopping = [
+        {'datetime': '2025-06-09T17:45:00+00:00', 'precipitation': 1.5},
+        {'datetime': '2025-06-09T17:46:00+00:00', 'precipitation': 0.5},
+        {'datetime': '2025-06-09T17:47:00+00:00', 'precipitation': 0}
+    ]
+    result_with_rain_stopping = json.loads(template.module.minutes_until_no_rain(test_data_with_rain_stopping).strip())
+    assert result_with_rain_stopping['status'] == 'rain_stops'
+    assert result_with_rain_stopping['time'] == '2025-06-09T17:47:00+00:00'
+    assert result_with_rain_stopping['resolution'] == 'minutes'
+
+    # Test with always rain in forecast
+    test_data_always_rain = [
+        {'datetime': '2025-06-09T17:45:00+00:00', 'precipitation': 1.5},
+        {'datetime': '2025-06-09T17:46:00+00:00', 'precipitation': 0.5},
+        {'datetime': '2025-06-09T17:47:00+00:00', 'precipitation': 1.0}
+    ]
+    result_always_rain = json.loads(template.module.minutes_until_no_rain(test_data_always_rain).strip())
+    assert result_always_rain['status'] == 'always_rain'
+    assert 'time' not in result_always_rain
+    assert result_always_rain['resolution'] == 'minutes'
+
 def test_hours_until_rain_macro():
     """Test the hours_until_rain macro."""
     # Setup Jinja2 environment with whitespace control
@@ -131,6 +165,74 @@ def test_hours_until_rain_macro():
         assert result_rain_data['status'] == 'rain_starts'
         assert result_rain_data['time'] == '2025-06-10T20:00:00+00:00'
         assert result_rain_data['resolution'] == 'hours'
+
+def test_hours_until_no_rain_macro():
+    """Test the hours_until_no_rain macro."""
+    # Setup Jinja2 environment with whitespace control
+    env = Environment(
+        loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), '../../usr/share/hassio/homeassistant')),
+        trim_blocks=True,
+        lstrip_blocks=True
+    )
+    
+    # Get the template
+    template = env.get_template('custom_templates/weather.jinja')
+    
+    # Test with rain stopping in forecast
+    test_data_with_rain_stopping = [
+        {'datetime': '2025-06-10T17:00:00+00:00', 'precipitation': 1.5},
+        {'datetime': '2025-06-10T18:00:00+00:00', 'precipitation': 0.5},
+        {'datetime': '2025-06-10T19:00:00+00:00', 'precipitation': 0}
+    ]
+    result_with_rain_stopping = json.loads(template.module.hours_until_no_rain(test_data_with_rain_stopping).strip())
+    assert result_with_rain_stopping['status'] == 'rain_stops'
+    assert result_with_rain_stopping['time'] == '2025-06-10T19:00:00+00:00'
+    assert result_with_rain_stopping['resolution'] == 'hours'
+
+    # Test with always rain in forecast
+    test_data_always_rain = [
+        {'datetime': '2025-06-10T17:00:00+00:00', 'precipitation': 1.5},
+        {'datetime': '2025-06-10T18:00:00+00:00', 'precipitation': 0.5},
+        {'datetime': '2025-06-10T19:00:00+00:00', 'precipitation': 1.0}
+    ]
+    result_always_rain = json.loads(template.module.hours_until_no_rain(test_data_always_rain).strip())
+    assert result_always_rain['status'] == 'always_rain'
+    assert 'time' not in result_always_rain
+    assert result_always_rain['resolution'] == 'hours'
+
+def test_days_until_rain_macro():
+    """Test the days_until_rain macro."""
+    # Setup Jinja2 environment with whitespace control
+    env = Environment(
+        loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), '../../usr/share/hassio/homeassistant')),
+        trim_blocks=True,
+        lstrip_blocks=True
+    )
+    
+    # Get the template
+    template = env.get_template('custom_templates/weather.jinja')
+    
+    # Test with rain in forecast
+    test_data_with_rain = [
+        {'datetime': '2025-06-10T11:00:00+00:00', 'precipitation': 0},
+        {'datetime': '2025-06-11T11:00:00+00:00', 'precipitation': 0},
+        {'datetime': '2025-06-12T11:00:00+00:00', 'precipitation': 8.66}
+    ]
+    result_with_rain = json.loads(template.module.days_until_rain(test_data_with_rain).strip())
+    assert result_with_rain['status'] == 'rain_starts'
+    assert result_with_rain['time'] == '2025-06-12T11:00:00+00:00'
+    assert result_with_rain['resolution'] == 'days'
+
+    # Test without rain in forecast
+    test_data_without_rain = [
+        {'datetime': '2025-06-10T11:00:00+00:00', 'precipitation': 0},
+        {'datetime': '2025-06-11T11:00:00+00:00', 'precipitation': 0},
+        {'datetime': '2025-06-12T11:00:00+00:00', 'precipitation': 0}
+    ]
+    result_without_rain = json.loads(template.module.days_until_rain(test_data_without_rain).strip())
+    assert result_without_rain['status'] == 'no_rain'
+    assert 'time' not in result_without_rain
+    assert result_without_rain['resolution'] == 'days'
 
 def test_days_until_no_rain_macro():
     """Test the days_until_no_rain macro."""
