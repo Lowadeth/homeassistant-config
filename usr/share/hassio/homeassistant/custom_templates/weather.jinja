@@ -11,16 +11,9 @@
         |selectattr('precipitation', '>', 0)
         |first -%}
     {%- if first_rain is defined -%}
-        {%- set first_rain_time = first_rain.datetime -%}
-        {%- set current_time = forecast[0].datetime -%}
-        {%- set first_hour = first_rain_time[11:13] | int -%}
-        {%- set first_minute = first_rain_time[14:16] | int -%}
-        {%- set current_hour = current_time[11:13] | int -%}
-        {%- set current_minute = current_time[14:16] | int -%}
-        {%- set minutes = (first_hour * 60 + first_minute) - (current_hour * 60 + current_minute) -%}
-        {{- minutes -}}
+        {{- '{"time": "' ~ first_rain.datetime ~ '", "resolution": "minutes"}' -}}
     {%- else -%}
-        {{- "no_rain" -}}
+        {{- '{"time": "no_rain", "resolution": "minutes"}' -}}
     {%- endif -%}
 {% endmacro -%}
 
@@ -29,16 +22,8 @@
         |selectattr('precipitation', '>', 0)
         |first -%}
     {%- if first_rain is defined -%}
-        {%- set first_rain_time = first_rain.datetime -%}
-        {%- set current_time = forecast[0].datetime -%}
-        {%- set first_hour = first_rain_time[11:13] | int -%}
-        {%- set current_hour = current_time[11:13] | int -%}
-        {%- set hours = first_hour - current_hour -%}
-        {%- if hours < 0 -%}
-            {%- set hours = hours + 24 -%}
-        {%- endif -%}
-        {{- hours -}}
+        {{- '{"time": "' ~ first_rain.datetime ~ '", "resolution": "hours"}' -}}
     {%- else -%}
-        {{- "no_rain" -}}
+        {{- '{"time": "no_rain", "resolution": "hours"}' -}}
     {%- endif -%}
 {% endmacro -%}
