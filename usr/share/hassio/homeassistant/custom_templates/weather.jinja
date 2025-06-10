@@ -23,3 +23,22 @@
         {{- "no_rain" -}}
     {%- endif -%}
 {% endmacro -%}
+
+{% macro hours_until_rain(forecast) -%}
+    {%- set first_rain = forecast
+        |selectattr('precipitation', '>', 0)
+        |first -%}
+    {%- if first_rain is defined -%}
+        {%- set first_rain_time = first_rain.datetime -%}
+        {%- set current_time = forecast[0].datetime -%}
+        {%- set first_hour = first_rain_time[11:13] | int -%}
+        {%- set current_hour = current_time[11:13] | int -%}
+        {%- set hours = first_hour - current_hour -%}
+        {%- if hours < 0 -%}
+            {%- set hours = hours + 24 -%}
+        {%- endif -%}
+        {{- hours -}}
+    {%- else -%}
+        {{- "no_rain" -}}
+    {%- endif -%}
+{% endmacro -%}
