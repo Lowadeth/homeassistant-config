@@ -62,6 +62,7 @@ def test_minutes_until_rain_macro():
         {'datetime': '2025-06-09T17:47:00+00:00', 'precipitation': 0}
     ]
     result_with_rain = json.loads(template.module.minutes_until_rain(test_data_with_rain).strip())
+    assert result_with_rain['status'] == 'rain_starts'
     assert result_with_rain['time'] == '2025-06-09T17:46:00+00:00'
     assert result_with_rain['resolution'] == 'minutes'
 
@@ -72,7 +73,8 @@ def test_minutes_until_rain_macro():
         {'datetime': '2025-06-09T17:47:00+00:00', 'precipitation': 0}
     ]
     result_without_rain = json.loads(template.module.minutes_until_rain(test_data_without_rain).strip())
-    assert result_without_rain['time'] == 'no_rain'
+    assert result_without_rain['status'] == 'no_rain'
+    assert 'time' not in result_without_rain
     assert result_without_rain['resolution'] == 'minutes'
 
     # Test with its-raining-in-minutes.yaml data
@@ -81,6 +83,7 @@ def test_minutes_until_rain_macro():
         # Extract forecast data from the YAML file
         forecast_data = rain_data['weather.openweathermap']['forecast']
         result_rain_data = json.loads(template.module.minutes_until_rain(forecast_data).strip())
+        assert result_rain_data['status'] == 'rain_starts'
         assert result_rain_data['time'] == '2025-06-10T17:13:00+00:00'
         assert result_rain_data['resolution'] == 'minutes'
 
@@ -104,6 +107,7 @@ def test_hours_until_rain_macro():
         {'datetime': '2025-06-10T20:00:00+00:00', 'precipitation': 0.4}
     ]
     result_with_rain = json.loads(template.module.hours_until_rain(test_data_with_rain).strip())
+    assert result_with_rain['status'] == 'rain_starts'
     assert result_with_rain['time'] == '2025-06-10T20:00:00+00:00'
     assert result_with_rain['resolution'] == 'hours'
 
@@ -114,7 +118,8 @@ def test_hours_until_rain_macro():
         {'datetime': '2025-06-10T19:00:00+00:00', 'precipitation': 0}
     ]
     result_without_rain = json.loads(template.module.hours_until_rain(test_data_without_rain).strip())
-    assert result_without_rain['time'] == 'no_rain'
+    assert result_without_rain['status'] == 'no_rain'
+    assert 'time' not in result_without_rain
     assert result_without_rain['resolution'] == 'hours'
 
     # Test with its-raining-in-hours.yaml data
@@ -123,6 +128,7 @@ def test_hours_until_rain_macro():
         # Extract forecast data from the YAML file
         forecast_data = rain_data['weather.openweathermap']['forecast']
         result_rain_data = json.loads(template.module.hours_until_rain(forecast_data).strip())
+        assert result_rain_data['status'] == 'rain_starts'
         assert result_rain_data['time'] == '2025-06-10T20:00:00+00:00'
         assert result_rain_data['resolution'] == 'hours'
 
@@ -145,6 +151,7 @@ def test_days_until_no_rain_macro():
         {'datetime': '2025-06-12T11:00:00+00:00', 'precipitation': 0}
     ]
     result_with_rain = json.loads(template.module.days_until_no_rain(test_data_with_rain).strip())
+    assert result_with_rain['status'] == 'rain_stops'
     assert result_with_rain['time'] == '2025-06-12T11:00:00+00:00'
     assert result_with_rain['resolution'] == 'days'
 
@@ -155,7 +162,8 @@ def test_days_until_no_rain_macro():
         {'datetime': '2025-06-12T11:00:00+00:00', 'precipitation': 2.0}
     ]
     result_always_rain = json.loads(template.module.days_until_no_rain(test_data_always_rain).strip())
-    assert result_always_rain['time'] == 'always_rain'
+    assert result_always_rain['status'] == 'always_rain'
+    assert 'time' not in result_always_rain
     assert result_always_rain['resolution'] == 'days'
 
     # Test with it-stops-raining-in-days.yaml data
@@ -164,5 +172,6 @@ def test_days_until_no_rain_macro():
         # Extract forecast data from the YAML file
         forecast_data = rain_data['weather.openweathermap']['forecast']
         result_rain_data = json.loads(template.module.days_until_no_rain(forecast_data).strip())
+        assert result_rain_data['status'] == 'rain_stops'
         assert result_rain_data['time'] == '2025-06-12T11:00:00+00:00'
         assert result_rain_data['resolution'] == 'days' 

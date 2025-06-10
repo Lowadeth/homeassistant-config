@@ -11,9 +11,9 @@
         |selectattr('precipitation', '>', 0)
         |first -%}
     {%- if first_rain is defined -%}
-        {{- '{"time": "' ~ first_rain.datetime ~ '", "resolution": "minutes"}' -}}
+        {{- '{"status": "rain_starts", "time": "' ~ first_rain.datetime ~ '", "resolution": "minutes"}' -}}
     {%- else -%}
-        {{- '{"time": "no_rain", "resolution": "minutes"}' -}}
+        {{- '{"status": "no_rain", "resolution": "minutes"}' -}}
     {%- endif -%}
 {% endmacro -%}
 
@@ -22,9 +22,9 @@
         |selectattr('precipitation', '>', 0)
         |first -%}
     {%- if first_rain is defined -%}
-        {{- '{"time": "' ~ first_rain.datetime ~ '", "resolution": "hours"}' -}}
+        {{- '{"status": "rain_starts", "time": "' ~ first_rain.datetime ~ '", "resolution": "hours"}' -}}
     {%- else -%}
-        {{- '{"time": "no_rain", "resolution": "hours"}' -}}
+        {{- '{"status": "no_rain", "resolution": "hours"}' -}}
     {%- endif -%}
 {% endmacro -%}
 
@@ -33,8 +33,8 @@
         |selectattr('precipitation', '==', 0)
         |first -%}
     {%- if first_no_rain is defined -%}
-        {{- '{"time": "' ~ first_no_rain.datetime ~ '", "resolution": "days"}' -}}
+        {{- '{"status": "rain_stops", "time": "' ~ first_no_rain.datetime ~ '", "resolution": "days"}' -}}
     {%- else -%}
-        {{- '{"time": "always_rain", "resolution": "days"}' -}}
+        {{- '{"status": "always_rain", "resolution": "days"}' -}}
     {%- endif -%}
 {% endmacro -%}
