@@ -8,4 +8,13 @@
 __pycache__/
 
 # Home Assistant
-secrets.yaml 
+secrets.yaml
+
+# Custom components - ignore foreign hacs
+/usr/share/hassio/homeassistant/custom_components/miele/
+/usr/share/hassio/homeassistant/custom_components/hacs/
+/usr/share/hassio/homeassistant/custom_components/alexa_media/
+/usr/share/hassio/homeassistant/custom_components/tapo_control/
+/usr/share/hassio/homeassistant/custom_components/juwel_helialux/
+/usr/share/hassio/homeassistant/custom_components/artnet_led/
+/usr/share/hassio/homeassistant/custom_components/homematicip_local/
